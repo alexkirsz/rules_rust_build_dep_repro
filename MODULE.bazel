@@ -1,0 +1,32 @@
+bazel_dep(name = "rules_rust", version = "0.52.2")
+
+PLATFORM_TRIPLES = [
+    "aarch64-apple-ios",
+    "aarch64-apple-darwin",
+]
+
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.toolchain(
+    edition = "2021",
+    extra_target_triples = PLATFORM_TRIPLES,
+    versions = ["nightly/2024-08-23"],
+)
+use_repo(
+    rust,
+    "rust_toolchains",
+)
+
+register_toolchains("@rust_toolchains//:all")
+
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate", isolate = True)
+crate.from_cargo(
+    name = "crates",
+    cargo_lockfile = "//:Cargo.lock",
+    manifests = [
+        "//:Cargo.toml",
+    ],
+    supported_platform_triples = PLATFORM_TRIPLES,
+)
+use_repo(crate, "crates")
+
+bazel_dep(name = "apple_support", version = "1.17.0", repo_name = "build_bazel_apple_support")
